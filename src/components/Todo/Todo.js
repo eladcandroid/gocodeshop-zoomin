@@ -3,6 +3,9 @@ import { Component } from "react";
 import "./Todo.css";
 
 class Todo extends Component {
+  componentWillUnmount() {
+    console.log("TODO - componentWillUnmount");
+  }
   render() {
     const { id, title, completed, toggleCompleted } = this.props;
 

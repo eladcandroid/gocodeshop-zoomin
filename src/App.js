@@ -3,21 +3,37 @@ import { flushSync } from "react-dom";
 import "./App.css";
 import Counter from "./components/Counter";
 import Todos from "./components/Todos/Todos";
+import Button from "@mui/material/Button";
 
 class App extends Component {
+  constructor(props) {
+    console.log("LIFE-CYCLE: constructor");
+
+    super(props);
+  }
+
+  fetchTodos = async () => {
+    try {
+      this.setState({ loading: true, error: false });
+      const res = await fetch("https://jsonplaceholder.typicode.com/todos");
+      const todos = await res.json();
+      this.setState({ todos, loading: false });
+    } catch (e) {
+      this.setState({ error: true, loading: false });
+    }
+  };
+
+  componentDidMount() {
+    console.log("LIFE-CYCLE: componentDidMount");
+
+    this.fetchTodos();
+  }
+
   state = {
-    todos: [
-      {
-        id: 1,
-        title: "Wash your dishes",
-        completed: true,
-      },
-      {
-        id: 2,
-        title: "Throw the garbage",
-        completed: false,
-      },
-    ],
+    todos: [],
+    loading: false,
+    error: false,
+    show: true,
   };
 
   newTodo = "";
@@ -63,18 +79,41 @@ class App extends Component {
   };
 
   render() {
+    console.log("LIFE-CYCLE: render()");
     return (
       <div className="App">
+        <Button
+          color="primary"
+          variant="contained"
+          onClick={() => this.setState({ show: false })}
+        >
+          Hide todos
+        </Button>
+        <br />
+        <br />
+
+
         <input
           onChange={this.handleChange}
           type="text"
           placeholder="Add a new todo"
         />
         <button onClick={this.addTodo}>Add todo</button>
-        <Todos
-          todos={this.state.todos}
-          toggleCompleted={this.toggleCompleted}
-        />
+        {this.state.loading ? (
+          <div>טוען...</div>
+        ) : this.state.error ? (
+          <>
+            <div>לא ניתן לטעון נתונים מהשרת. נסה בזמן מאוחר יותר</div>
+            <button onClick={this.fetchTodos}>נסה שנית</button>
+          </>
+        ) : (
+          this.state.show && (
+            <Todos
+              todos={this.state.todos}
+              toggleCompleted={this.toggleCompleted}
+            />
+          )
+        )}
       </div>
     );
   }
